@@ -46,7 +46,7 @@ class View(ft.UserControl):
         self._btnAeroportiConnessi=ft.ElevatedButton(text="Aeroporti connessi",
                                                      on_click=self._controller.handleConnessi)
         self._ddAeroportoArrivo=ft.Dropdown(label="Aeroporto di destinazione")
-        self._btnTestConnessione = ft.ElevatedButton(text="Cerca itinerario",
+        self._btnTestConnessione = ft.ElevatedButton(text="Test connessione",
                                                      on_click=self._controller.handleTestConnessione)
 
         row2 = ft.Row([

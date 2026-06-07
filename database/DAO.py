@@ -1,107 +1,53 @@
 from database.DB_connect import DBConnect
-from model.airport import Airport
-from model.tratta import Tratta
 
 
 class DAO():
 
-    @staticmethod
-    def getAllAirports():
-        conn = DBConnect.get_connection()
-
-        result = []
-
-        cursor = conn.cursor(dictionary=True)
-        query = """SELECT * from airports a order by a.AIRPORT asc"""
-
-        cursor.execute(query)
-
-        for row in cursor:
-            result.append(Airport(**row))
-
-        cursor.close()
-        conn.close()
-        return result
+    def __init__(self):
+        pass
 
     @staticmethod
-    def getAllNodes(nMin, idMapA):
-        conn = DBConnect.get_connection()
+    def getAllStates():
 
-        result = []
+        conn=DBConnect.get_connection()
+        cursor=conn.cursor(dictionary=True)
 
-        cursor = conn.cursor(dictionary=True)
-        query = """select t.id, t.iata_code, count(*) as n
-                    from (select a.id, a.iata_code, f.airline_id, count(*) 
-                            from airports a, flights f  
-                            where a.id=f.ORIGIN_AIRPORT_ID or a.id=f.DESTINATION_AIRPORT_ID 
-                            group by a.id, a.iata_code, f.airline_id) as t
-                    group by t.id, t.iata_code
-                    having n>=%s
-                    order by n asc"""
+        res=[]
 
-        cursor.execute(query, (nMin,))
-
-        for row in cursor:
-            result.append(idMapA[row["id"]])
-
-        cursor.close()
-        conn.close()
-        return result
-
-    @staticmethod
-    def getAllEdgesV1(idMapA): #versione con query sql semplice e codice python articolato
-        conn = DBConnect.get_connection()
-
-        result = []
-
-        cursor = conn.cursor(dictionary=True)
-        query = """select f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID, count(*) as peso
-                    from flights f
-                    group by f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID
-                    order by f.ORIGIN_AIRPORT_ID , f.DESTINATION_AIRPORT_ID """
+        query="""select distinct state 
+                from airports
+                order by state"""
 
         cursor.execute(query,)
 
         for row in cursor:
-            # result.append((idMapA[row["ORIGIN_AIRPORT_ID"]], #tupla che ha come primo oggetto l'aer di partenza
-            #              idMapA[row["DESTINATION_AIRPORT_ID"]], #poi l'aeroporto di arrivo
-            #              row["peso"])) #poi il peso della tratta
-            result.append(Tratta(idMapA[row["ORIGIN_AIRPORT_ID"]],
-                                 idMapA[row["DESTINATION_AIRPORT_ID"]],
-                                 row["peso"]))
+            res.append(row["state"])
 
         cursor.close()
         conn.close()
-        return result #restituisce una lista di oggetti Tratta
+
+        return res #lista di stringhe stato
 
     @staticmethod
-    def getAllEdgesV2(idMapA):  # versione con query sql articolata e codice python semplice
+    def getEdges():
+
         conn = DBConnect.get_connection()
-
-        result = []
-
         cursor = conn.cursor(dictionary=True)
-        query = """select t1.origin_airport_id, t1.destination_airport_id, coalesce(t1.n,0)+coalesce(t2.n,0) as peso
-                    from (select f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID, count(*) as n
-                            from flights f
-                            group by f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID
-                            order by f.ORIGIN_AIRPORT_ID , f.DESTINATION_AIRPORT_ID ) as t1
-                        left join (select f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID, count(*) as n
-                            from flights f
-                            group by f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID
-                            order by f.ORIGIN_AIRPORT_ID , f.DESTINATION_AIRPORT_ID) as t2
-                    on t1.origin_airport_id=t2.destination_airport_id and t1.destination_airport_id=t2.origin_airport_id
-                    and t1.origin_airport_id<t1.destination_airport_id or t2.origin_airport_id is null """
-        #aggiungo la possibilità che per una tratta ci sia un volo di andata ma non di ritorno
-        #coalesce è una funzione sql che da una lista di valori restituisce il primo non nullo
+
+        res = []
+
+        query = """select distinct a1.state as stato1, a2.state as stato2, count(distinct f.tail_number) as nVelivoli
+                    from airports a1, airports a2, flights f 
+                    where f.origin_airport_id = a1.id
+                    and f.DESTINATION_AIRPORT_ID = a2.id 
+                    group by stato1, stato2"""
 
         cursor.execute(query,)
 
         for row in cursor:
-            result.append(Tratta(idMapA[row["origin_airport_id"]],
-                                 idMapA[row["destination_airport_id"]],
-                                 row["peso"]))
+            res.append((row["stato1"], row["stato2"], row["nVelivoli"]))
 
         cursor.close()
         conn.close()
-        return result  # restituisce una lista già pronta di oggetti Tratta
+
+        return res  # lista di tuple stato_or, stato_dest, peso

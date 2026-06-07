@@ -17,13 +17,13 @@ class View(ft.UserControl):
         self.txt_result = None
         self.txt_container = None
         self._txtInCMin = None
-        self._btnAnalizzaAeroporti = None
-        self._ddAeroportoPartenza = None
+        self._btnCreaGrafo = None
+        self._ddStati = None
         self._btnAeroportiConnessi = None
         self._ddAeroportoArrivo = None
-        self._txtInNTratteMax = None
-        self._btnCercaItinerario = None
-        self._btnTestConnessione = None
+        self._txtInNTuristi = None
+        self._txtInNGiorni = None
+        self._btnSimula = None
 
     def load_interface(self):
         # title
@@ -31,41 +31,35 @@ class View(ft.UserControl):
         self._page.controls.append(self._title)
 
         #ROW1
-        self._txtInCMin=ft.TextField(label="N min compagnie")
-        self._btnAnalizzaAeroporti=ft.ElevatedButton(text="Analizza aeroporti",
-                                                     on_click=self._controller.handleAnalizza)
+        self._btnCreaGrafo=ft.ElevatedButton(text="Crea grafo",
+                                                     on_click=self._controller.handleCreaGrafo)
         row1=ft.Row([
             ft.Container(None, width=250),
-            ft.Container(self._txtInCMin, width=250),
-            ft.Container(self._btnAnalizzaAeroporti, width=250),
+            ft.Container(self._btnCreaGrafo, width=250),
             ft.Container(None, width=250)
         ], alignment=ft.MainAxisAlignment.CENTER) #così i controlli sono sempre al centro anche se cambia la dimensione della viewport
 
         #ROW2
-        self._ddAeroportoPartenza=ft.Dropdown(label="Aeroporto di partenza")
-        self._btnAeroportiConnessi=ft.ElevatedButton(text="Aeroporti connessi",
-                                                     on_click=self._controller.handleConnessi)
-        self._ddAeroportoArrivo=ft.Dropdown(label="Aeroporto di destinazione")
-        self._btnTestConnessione = ft.ElevatedButton(text="Test connessione",
-                                                     on_click=self._controller.handleTestConnessione)
+        self._ddStati=ft.Dropdown(label="Stato")
+        self._controller.fillDDStato()
+        self._btnVisualizzaVelivoli = ft.ElevatedButton(text="Visualizza velivoli",
+                                                     on_click=self._controller.handleVisualizzaVelivoli)
 
         row2 = ft.Row([
-            ft.Container(self._ddAeroportoPartenza, width=250),
-            ft.Container(self._btnAeroportiConnessi, width=150),
-            ft.Container(self._ddAeroportoArrivo, width=250),
-            ft.Container(self._btnTestConnessione, width=150)
+            ft.Container(self._ddStati, width=250),
+            ft.Container(self._btnVisualizzaVelivoli, width=250)
         ], alignment=ft.MainAxisAlignment.CENTER)
 
         #ROW3
-        self._txtInNTratteMax=ft.TextField(label="N tratte max")
-        self._btnCercaItinerario=ft.ElevatedButton(text="Cerca itinerario",
+        self._txtInNTuristi=ft.TextField(label="N turisti")
+        self._txtInNGiorni=ft.TextField(label="N giorni")
+        self._btnSimula=ft.ElevatedButton(text="Simula",
                                                    on_click=self._controller.handleCerca)
 
         row3 = ft.Row([
-            ft.Container(None, width=250),
-            ft.Container(self._txtInNTratteMax, width=250),
-            ft.Container(self._btnCercaItinerario, width=250),
-            ft.Container(None, width=250)
+            ft.Container(self._txtInNTuristi, width=250),
+            ft.Container(self._txtInNGiorni, width=250),
+            ft.Container(self._btnSimula, width=250),
         ], alignment=ft.MainAxisAlignment.CENTER)
 
         self._page.add(row1, row2, row3)
